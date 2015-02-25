@@ -1,78 +1,86 @@
 /** @jsx React.DOM */
 var React = require('react');
+var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
+
 var AppStore = require('../../stores/app-store.js');
-var AddToCart = require('./app-addtocart.js');
 var CatalogItem = require('./app-catalogitem.js');
 var StoreWatchMixin = require('../../mixins/StoreWatchMixin.js');
 var FetchingMixin = require('../../mixins/FetchingMixin.js');
-var Item = require('../../data/item.js');
-var AppConstants = require('../../constants/app-constants');
-var AppDispatcher = require('../../dispatchers/app-dispatcher');
+var Wish = require('../../data/wish.js');
 var events = require('../../mixins/react-event-emitter.js');
 var Parse = require('parse').Parse;
 var Alert = require('react-bootstrap').Alert;
 
+var MasonryMixin = require('react-masonry-mixin');
+var InfiniteScroll = require('react-infinite-scroll')(React);
+
+var masonryOptions = {
+    transitionDuration: 0
+};
+
+var page = 0;
+var perPage = 50;
+
 function getCatalog(cb) {
-  return null;
+  return {items: AppStore.getCatalog(), modalShown: false, page: 1, hasMore: true, sholdUpdate: false};
 }
 
 var Catalog =
   React.createClass({
-    modelState: ['items'],
-    // fetchPollInterval: 2000,
-    pleaseRefreshMe: false,
+    mixins: [PureRenderMixin, StoreWatchMixin(getCatalog), events("logout"), events("removeItem"), MasonryMixin('masonryContainer', masonryOptions)],//StoreWatchMixin(getCatalog),, FetchingMixin
 
-    mixins: [FetchingMixin, StoreWatchMixin(getCatalog), events("logout")],//StoreWatchMixin(getCatalog),
-
-    getInitialState: function() {
-      return {items: [], modalShown: false};
+    onRemoveItem: function(item) {
+      var self = this;
+      if(this.isMounted()) this.forceUpdate();
     },
 
-    shouldComponentUpdate: function(nextProps, nextState) {
-      // TODO: return whether or not current chat thread is
-      // different to former one.
-      console.log('shouldComponentUpdate!!!', AppStore.getPleaseRefresh());
-      if(AppStore.getPleaseRefresh()) {
-        this.fetchData();
-        return true;
-      }
-      return true;
-    },
-
-    componentDidMount: function(){
-      console.log('componentDidMount!!!');
-        // this.fetchData();
-      // this.loadNavbarJSON();
-    },
-
-
-    fetchData: function() {
-      Item.getAll('fetchData', this.stateSetter('items'));
-      AppStore.setPleaseRefresh(false);
-      return true;
-    },
-
-    // update our state when the login event is emitted
     onLogout: function(){
       var self = this;
-      console.log('EMITTED LOGOUT EVENT');
-      AppStore.setPleaseRefresh(true);
+      // AppStore.setPleaseRefresh(true);
+      // if(this.isMounted()) this.setState({'sholdUpdate': new Date()})
+    },
+
+    includeLoadedArticles: function(page, wishes) {
+      var par = AppStore.getCatalog();
+      var catalog = par.concat(wishes);//HelpersMixin.createUniqueArray(par.concat(wishes), 'id');
+      AppStore.setCatalog(catalog);
+      if(this.isMounted()) this.setState({'items': catalog, 'page': page + 1, 'hasMore': wishes.length == perPage});
+    },
+
+    loadMoreWishes: function(page) {
+      this.fetchMoreWishes(page, function(wishes) {
+        this.includeLoadedArticles(page, wishes);
+      }.bind(this));
+    },
+
+    fetchMoreWishes: function(page, callback) {
+      var self = this;
+      Wish.getAll('fetchData', page, perPage, AppStore.getCurrentUser(), function(wishes) {
+        var its = wishes.models.map(function(item){
+          return item;
+        })
+
+        callback(its);
+      }.bind(this));
+    },
+
+    getArticlesToRender: function () {
+      var itms = AppStore.getCatalog();
+      return itms.map(function (item, index) {
+        return (
+            <CatalogItem item={item} idx={index} />
+        );
+      });
     },
 
     render:function(){
-      if (this.state.items&&this.state.items.models) {
-        var items = this.state.items.models.map(function(item){
-          return <CatalogItem item={item} />
-        })
-      }
       return (
-          <div className="row">
-          <Alert bsStyle="warning">
-            <strong>Holy guacamole!</strong> Best check yo self, youre not looking too good.
-          </Alert>
-          {items}
-          </div>
-        )
+        <div className="row">
+          <InfiniteScroll ref='masonryContainer' id='masonryContainer' pageStart={this.state.page - 1} loadMore={this.loadMoreWishes} hasMore={this.state.hasMore} threshold={1000}>
+            {this.getArticlesToRender()}
+          </InfiniteScroll>
+        </div>
+      )
     }
   });
 module.exports = Catalog;

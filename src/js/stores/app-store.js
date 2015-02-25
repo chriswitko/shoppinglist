@@ -2,8 +2,8 @@ var AppDispatcher = require('../dispatchers/app-dispatcher');
 var AppConstants = require('../constants/app-constants');
 var merge = require('react/lib/merge');
 var EventEmitter = require('events').EventEmitter;
-var Item = require('../data/item.js');
 var Parse = require('parse').Parse;
+var Wish = require('../data/wish.js');
 
 var CHANGE_EVENT = "change";
 
@@ -33,9 +33,36 @@ function _getPleaseRefresh() {
   return _pleaseRefresh;
 }
 
-function _removeItem(index){
-  _cartItems[index].inCart = false;
-  _cartItems.splice(index, 1);
+function _removeItemFromCatalog(item, index, cb){
+  _catalog[index].isRemoved = true;
+  _catalog.splice(index, 1);
+  cb();
+}
+
+function _addToFav(item, cb) {
+  item.props.item.set("isFaved", !item.props.item.get('isFaved'));
+  item.props.item.save({
+    success: function(myObject) {
+      cb(true);
+    },
+    error: function(myObject, error) {
+      cb(error);
+    }
+  });
+}
+
+function _removeItem(item, index, cb){
+  if(!_getCurrentUser()) return cb();
+  item.destroy({
+    success: function(myObject) {
+      _removeItemFromCatalog(item, index, function() {
+        // self.props.helloWorld.getDOMNode().remove();
+        cb();
+      });
+    },
+    error: function(myObject, error) {
+    }
+  });
 }
 
 function _increaseItem(index){
@@ -50,54 +77,39 @@ function _decreaseItem(index){
   }
 }
 
-function _createItem(item, cb) {
-  Item.createByObject(item, cb);
-  // this.navigate('/');
-  // return item;
+function _appLogout() {
+  Parse.User.logOut();
+  location = '/';
 }
 
-function _addItem(item){
-  if(!item.inCart){
-    item['qty'] = 1;
-    item['inCart'] = true;
-    _cartItems.push(item);
-  }
-  else {
-    _cartItems.forEach(function(cartItem, i){
-      if(cartItem.idx.toString()===item.idx.toString()){
-        _increaseItem(i);
-      }
+function _submit(item, cb) {
+  var url = item.refs.url.getDOMNode().value;
+  var title = item.refs.title.getDOMNode().value;
+  var image = item.refs.image.getDOMNode();
+  if(!image.files.length) return;
+
+  var ts = Math.floor(Date.now() / 1000);
+  var name = "photo_" + ts.toString() + ".jpg";
+
+  if (image.files.length > 0) {
+    var file = image.files[0];
+    var parseFile = new Parse.File(name, file);
+    parseFile.save().then(function() {
+      Wish.createByObject({
+        'url': url,
+        'title': title,
+        'user': AppStore.getCurrentUser(),
+        'picture': parseFile
+      }, function() {
+        cb();
+      });
+    }, function(error) {
+      cb(error);
     });
+  } else {
+    cb();
   }
 }
-
-function _setRemoteData() {
-  var collection = new Item.Collection();
-  var all = [];
-  collection.query = new Parse.Query(Item);
-  collection.fetch({
-    success: function(obj) {
-      // this.setState({data: data});
-      _catalog = obj;
-    },
-    error: function(obj, err) {
-      console.error('getAll() error', obj, err);
-    }
-  });
-}
-
-function _cartTotals() {
-  var qty = 0, total = 0;
-  _cartItems.forEach(function(cartItem) {
-    qty += cartItem.qty;
-    total += cartItem.qty * cartItem.cost;
-  });
-
-  // console.log('currentUser', this.state.currentUser);
-
-  return {'qty': qty, 'total': total};
-}
-
 
 var AppStore = merge(EventEmitter.prototype, {
   emitChange:function(){
@@ -110,6 +122,10 @@ var AppStore = merge(EventEmitter.prototype, {
 
   removeChangeListener:function(callback){
     this.removeListener(CHANGE_EVENT, callback)
+  },
+
+  removeItemFromCatalog: function(item, idx, cb) {
+    _removeItemFromCatalog(item, idx, cb);
   },
 
   getUsername: function() {
@@ -158,9 +174,15 @@ var AppStore = merge(EventEmitter.prototype, {
     return _cartTotals();
   },
 
-  dispatcherIndex:AppDispatcher.register(function(payload){
+  dispatcherIndex:AppDispatcher.register({}, function(payload){
     var action = payload.action; // this is our action from handleViewAction
     switch(action.actionType){
+      case AppConstants.SUBMIT:
+        _submit(payload.action.item, payload.action.cb);
+        break;
+      case AppConstants.LOGOUT_APP:
+        _appLogout();
+        break;
       case AppConstants.CREATE_ITEM:
         _createItem(payload.action.item, payload.action.cb);
         break;
@@ -169,8 +191,12 @@ var AppStore = merge(EventEmitter.prototype, {
         _addItem(payload.action.item);
         break;
 
+      case AppConstants.ADD_TO_FAV:
+        _addToFav(payload.action.item, payload.action.cb);
+        break;
+
       case AppConstants.REMOVE_ITEM:
-        _removeItem(payload.action.index);
+        _removeItem(payload.action.item, payload.action.index, payload.action.cb);
         break;
 
       case AppConstants.INCREASE_ITEM:

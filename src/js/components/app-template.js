@@ -6,9 +6,11 @@ var Template =
   React.createClass({
     render:function(){
       return (
-        <div className="container">
-          <Header />
-          {this.props.children}
+        <div>
+          <div className="container">
+            <Header />
+            {this.props.children}
+          </div>
         </div>
         )
     }

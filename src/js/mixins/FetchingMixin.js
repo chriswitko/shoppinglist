@@ -1,9 +1,4 @@
 var Parse = require('parse').Parse;
-var Catalog = require('../components/catalog/app-catalog.js');
-var Item = require('../data/item.js');
-
-// var AppConstants = require('../constants/app-constants');
-// var AppDispatcher = require('../dispatchers/app-dispatcher');
 
 // TODO: make this work out-of-the-box for Backbone by replacing
 // Parse.Object -> Backbone.Model

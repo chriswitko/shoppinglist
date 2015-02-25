@@ -2,6 +2,33 @@ var AppConstants = require('../constants/app-constants.js');
 var AppDispatcher = require('../dispatchers/app-dispatcher.js');
 
 var AppActions = {
+  removeFromFav: function(item, index, cb) {
+    AppDispatcher.handleViewAction({
+      actionType: AppConstants.REMOVE_ITEM,
+      item: item,
+      index: index,
+      cb: cb
+    });
+  },
+  addToFav: function(item, cb) {
+    AppDispatcher.handleViewAction({
+      actionType: AppConstants.ADD_TO_FAV,
+      item: item,
+      cb: cb
+    })
+  },
+  submit: function(item, cb) {
+    AppDispatcher.handleViewAction({
+      actionType: AppConstants.SUBMIT,
+      item: item,
+      cb: cb
+    })
+  },
+  logout: function() {
+    AppDispatcher.handleViewAction({
+      actionType: AppConstants.LOGOUT_APP,
+    })
+  },
   createItem:function(item, cb){
     AppDispatcher.handleViewAction({
       actionType: AppConstants.CREATE_ITEM,
@@ -15,10 +42,11 @@ var AppActions = {
       item: item
     })
   },
-  removeItem:function(index){
+  removeItem:function(item){
     AppDispatcher.handleViewAction({
       actionType: AppConstants.REMOVE_ITEM,
-      index: index
+      item: item,
+      cb: cb
     })
   },
   decreaseItem:function(index){

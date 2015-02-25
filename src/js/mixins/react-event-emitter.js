@@ -9,31 +9,19 @@ var mixinFor = function (eventName, events) {
     var noop = function(){};
 
     var mixin = {
-        componentDidUpdate: function() {
-          console.log('componentDidUpdate');
-        },
-        componentDidMount: function() {
-          console.log('componentDidMount');
-        },
         componentWillMount: function(){
-          // if(!this.isMounted) return;
             if (!this["on" + pascal]) {
                 return;
             }
 
-            console.log('event', events);
-            console.log('pascal', pascal);
-
             events.on(event, this["on" + pascal]);
         },
         componentWillUnmount: function(){
-          // if(!this.isMounted) return;
             if (!this["on" + pascal]) {
                 return;
             }
 
             events.removeListener(event, this["on" + pascal]);
-            // events.off(event, this["on" + pascal]);
         }
     };
 

@@ -1,14 +1,13 @@
 /** @jsx React.DOM */
 var React = require('react');
 var AppStore = require('../../stores/app-store.js');
-var AddToCart = require('../catalog/app-addtocart.js');
 var StoreWatchMixin = require('../../mixins/StoreWatchMixin.js');
 var Link = require('react-router-component').Link;
 var FetchingMixin = require('../../mixins/FetchingMixin.js');
-var Item = require('../../data/item.js');
 var Parse = require('parse').Parse;
 var Navigatable = require('react-router-component').NavigatableMixin
 var events = require('../../mixins/react-event-emitter.js');
+var Alert = require('react-bootstrap').Alert;
 
 function getCurrentUser(component) {
   return {};
@@ -20,7 +19,7 @@ var UserRegister =
     mixins: [StoreWatchMixin(getCurrentUser), Navigatable],
 
     getInitialState: function() {
-      return {user: {}, password: ''};
+      return {user: {}, password: '', error: false};
     },
 
     fetchData: function() {
@@ -58,25 +57,29 @@ var UserRegister =
 
     render:function(){
         return (
-          <div className="col-xs-6 col-xs-push-3">
-            <h2>Register new user</h2>
-            <form className="form">
-              <div className="form-group">
-                <label htmlFor="exampleInputEmail1">Username</label>
-                <input type="text" className="form-control" id="username" ref="username" value={null} placeholder="Usename" />
-              </div>
-              <div className="form-group">
-                <label htmlFor="exampleInputEmail1">Email address</label>
-                <input type="text" className="form-control" id="email" ref="email" value={null} placeholder="Email" />
-              </div>
-              <div className="form-group">
-                <label htmlFor="exampleInputEmail1">Password</label>
-                <input type="password" className="form-control" id="password" ref="password" onChange={this.onChange} value={this.state.password} placeholder="Password" />
-              </div>
-              <div className="form-group">
-                <input type="button" className="btn btn-default" onClick={this.registerNewUser} value="Register" />
-              </div>
-            </form>
+          <div className="row">
+            <div className="col-xs-4">
+              <h3>Register new user</h3>
+              { this.state.error ? <Alert bsStyle="warning"><strong>Error</strong> Sorry, but your username or password is incorrect.</Alert> : null }
+              <form className="form">
+                <div className="form-group">
+                  <label htmlFor="exampleInputEmail1">Username</label>
+                  <input type="text" className="form-control" id="username" ref="username" value={null} placeholder="Usename" autoFocus="true" />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="exampleInputEmail1">Email address</label>
+                  <input type="text" className="form-control" id="email" ref="email" value={null} placeholder="Email" />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="exampleInputEmail1">Password</label>
+                  <input type="password" className="form-control" id="password" ref="password" onChange={this.onChange} value={this.state.password} placeholder="Password" />
+                </div>
+                <div className="form-group">
+                  <input type="button" className="btn btn-success" onClick={this.registerNewUser} value="Register" />
+                </div>
+              </form>
+            </div>
+            <div className="col-xs-8"></div>
           </div>
           );
     }

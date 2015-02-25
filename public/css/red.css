@@ -1,0 +1,53 @@
+* {
+  /*font-family: 'Muli', sans-serif;*/
+  /*font-weight: 300;*/
+  color: #4a4a4a;
+}
+
+body {
+  background-color: red;
+}
+
+a {
+  color: #000;
+}
+
+a.active {
+  text-decoration: underline;
+}
+
+a:not([href]) {
+  cursor: pointer;
+}
+
+.gridItem h4 a {
+  color: #4a4a4a;
+}
+
+.pink {
+  color: rgb(250, 30, 100);
+}
+
+.logo a {
+  color: rgb(43, 0, 247);
+  outline-color: rgb(43, 0, 247);
+  opacity: 0.949999988079071;
+  text-shadow: rgb(250, 30, 100) 5px 3px 0px, rgb(251, 229, 72) -5px -2px 0px;
+  font-weight: 900!important;
+  cursor: pointer;
+  text-decoration: none;
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAYAAABWKLW/AAAAGUlEQVQIW2NkuGP9n0HlKCMDEIAJGEDhAABozQME8q7LmQAAAABJRU5ErkJggg==) repeat;
+}
+
+.btn-success, .btn-success:hover, .btn-success:focus {
+  background: #4A4A4A;
+  border: 1px solid #a8a8a8;
+}
+
+.progress-bar-success {
+  background: #4A4A4A;
+}
+
+.progress-bar-success span {
+  color: #fff;
+}

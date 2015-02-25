@@ -19,13 +19,13 @@ var Wish = Parse.Object.extend('Wish', {}, {
     return instance;
   },
 
-  getByPageName: function(pageName, defaultContent, cb) {
+  getByPageName: function(pageName, cb) {
     var collection = new Wish.Collection();
     collection.query = new Parse.Query(Wish);
-    collection.query.equalTo('idx', pageName);
+    collection.query.equalTo('objectId', pageName);
     collection.fetch({
       success: function(obj) {
-        cb(obj.models[0] || Wish.create(pageName, defaultContent));
+        cb(obj.models[0]);// || Wish.create(pageName, defaultContent)
       },
       error: function(obj, err) {
         console.error('getByPageName() error', obj, err);
@@ -33,20 +33,52 @@ var Wish = Parse.Object.extend('Wish', {}, {
     });
   },
 
-  getAll: function(source, cb) {
-    console.log('getAll', source);
+  getAll: function(source, page, limit, user, cb) {
+    if(!limit) limit = 50;
+    if(!page) page = 1;
     var collection = new Wish.Collection();
     var all = [];
     collection.query = new Parse.Query(Wish);
+    collection.query.skip((page - 1) * limit);//default 0
+    collection.query.limit(limit);
+    collection.query.descending("createdAt");
+    if(user) collection.query.equalTo("user", user);
     collection.fetch({
       success: function(obj) {
+        var its = obj.models.map(function(item){
+          return item;
+        })
         cb(obj);
       },
       error: function(obj, err) {
         console.error('getAll() error', obj, err);
       }
     });
+  },
+
+  getFaved: function(source, page, limit, user, cb) {
+    if(!limit) limit = 50;
+    if(!page) page = 1;
+    var collection = new Wish.Collection();
+    var all = [];
+    collection.query = new Parse.Query(Wish);
+    collection.query.skip((page - 1) * limit);//default 0
+    collection.query.limit(limit);
+    if(user) collection.query.equalTo("user", user);
+    collection.query.equalTo("isFaved", true);
+    collection.fetch({
+      success: function(obj) {
+        var its = obj.models.map(function(item){
+          return item;
+        })
+        cb(obj);
+      },
+      error: function(obj, err) {
+        console.error('getFaved() error', obj, err);
+      }
+    });
   }
+
 });
 
 Wish.Collection = Parse.Collection.extend({
