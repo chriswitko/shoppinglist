@@ -1,2 +1,5 @@
 node_modules
 dist
+s3config
+dist
+production
