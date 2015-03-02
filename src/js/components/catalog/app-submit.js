@@ -11,9 +11,13 @@ var events = require('../../mixins/react-event-emitter.js');
 
 var Alert = require('react-bootstrap').Alert;
 
+var Parse = require('parse').Parse;
+
 function getCurrentUser(component) {
   return {};
 }
+
+
 
 var WishSubmit =
   React.createClass({
@@ -29,6 +33,14 @@ var WishSubmit =
       });
     },
 
+    grab: function() {
+      // var url = 'http://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png'
+      // getImageAsBase64(url, function(output) {
+      //   console.log(output);
+      //   alert('ok');
+      // })
+    },
+
     render:function(){
       return (
         <div className="row">
@@ -41,12 +53,19 @@ var WishSubmit =
                 <input type="text" className="form-control" id="url" ref="url" value={null} placeholder="Enter URL address" autoFocus="true" />
               </div>
               <div className="form-group">
+                <button type="button" className="btn btn-default btn-sm" onClick={this.grab}>Get data...</button>
+              </div>
+              <div className="form-group">
                 <label htmlFor="exampleInputEmail1">Title</label>
                 <input type="text" className="form-control" id="title" ref="title" value={null} placeholder="Enter Title" />
               </div>
               <div className="form-group">
                 <label htmlFor="exampleInputEmail1">Select image file...</label>
                 <input type="file" className="form-control" id="image" ref="image" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="exampleInputEmail1">or enter image url</label>
+                <input type="text" className="form-control" id="image_url" ref="image_url" />
               </div>
               <div className="form-group">
                 <input type="button" className="btn btn-success" onClick={this.submit} value="Submit..." />

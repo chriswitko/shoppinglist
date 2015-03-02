@@ -42,7 +42,7 @@ gulp.task('browserify-prod', function() {
   gulp.src('src/js/main.js')
     .pipe(browserify({transform: 'reactify'}))
     .pipe(concat('main.js'))
-    .pipe(uglify({mangle:false}))
+    // .pipe(uglify({mangle:false}))
     .pipe(gulp.dest('production/js'));
 });
 

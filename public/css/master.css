@@ -38,6 +38,23 @@
   font-size: 12px;
 }
 
+.overflow{
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+
+.ellipsis {
+  text-overflow: overflow;
+  overflow: hidden;
+}
+
+.ellipsis-txt {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
 /* Small devices (tablets, 768px and up) */
 @media (max-width: 768px) {
   .rar {

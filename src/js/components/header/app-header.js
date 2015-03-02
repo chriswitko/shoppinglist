@@ -41,15 +41,16 @@ var Header =
                 <p className="m0 light mt5 small"></p>
                 <ul className="list-unstyled list-inline small">
                   { this.state.isAuthed ? null : <li>Hello. Keep your shopping list in one place.</li> }
-                  { this.state.isAuthed ? <li><a href="/" className={this.getPath()=="/"?"active":""}>My Shopping List</a></li> : null }
-                  { this.state.isAuthed ? <li><i className="fa fa-star pink"></i> <a href="/faved" className={this.getPath()=="/faved"?"active":""}>Faved</a></li> : null }
-                  { this.state.isAuthed ? <li><Link href="/submit">Submit new link</Link></li> : null }
+                  { this.state.isAuthed ? <li><a href="/" className={this.getPath()=="/"?"active":""}>All</a></li> : null }
+                  { this.state.isAuthed ? <li><a href="/faved" className={this.getPath()=="/faved"?"active":""}>Faved</a></li> : null }
+                  { this.state.isAuthed ? <li><a href="/" className={this.getPath()=="/archive"?"active":""}>Archive</a></li> : null }
                 </ul>
               </div>
               <div className="col-sm-6 rar">
                 <ul className="list-unstyled list-inline small">
                   { this.state.isAuthed ? null : <li><Link href="/login">Login</Link></li> }
                   { this.state.isAuthed ? null : <li><Link href="/register">Register</Link></li> }
+                  { this.state.isAuthed ? <li><Link href="/submit">Submit new link</Link></li> : null }
                   { this.state.isAuthed ? <li><Link href="/settings">Settings</Link></li> : null }
                   { this.state.isAuthed ? <li><Link onClick={this.actionLogOut}>Logout</Link></li> : null }
                 </ul>
