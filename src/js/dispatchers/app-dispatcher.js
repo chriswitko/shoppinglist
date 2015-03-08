@@ -15,6 +15,8 @@
  *
  * A singleton that operates as the central hub for application updates.
  */
+/** @jsx React.DOM */
+'use strict';
 
 var Dispatcher = require('./ReactDispatcher.min.js');
 

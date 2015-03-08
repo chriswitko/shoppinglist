@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
   <title>ShoppingList</title>
   <link rel="stylesheet" media="screen" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
   <link href='http://fonts.googleapis.com/css?family=Muli:300,400' rel='stylesheet' type='text/css'>
@@ -14,7 +14,11 @@
   <script src="../public/js/masonry.js"></script>
 </head>
 <body>
-<div class="container" id="main">Please wait...</div>
+<div class="container" id="main">
+  <div class="clearfix ac p20">
+    <i class="fa fa-spinner fa-spin"></i> Please wait...
+  </div>
+</div>
 <script src="js/main.js"></script>
 </body>
 </html>

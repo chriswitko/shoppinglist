@@ -1,61 +1,47 @@
 /** @jsx React.DOM */
-var React = require('react');
-var AppStore = require('../../stores/app-store.js');
-var StoreWatchMixin = require('../../mixins/StoreWatchMixin.js');
-var Link = require('react-router-component').Link;
-var FetchingMixin = require('../../mixins/FetchingMixin.js');
-var Parse = require('parse').Parse;
-var Navigatable = require('react-router-component').NavigatableMixin
-var events = require('../../mixins/react-event-emitter.js');
-var Alert = require('react-bootstrap').Alert;
+'use strict';
 
-function getCurrentUser(component) {
-  return {};
-}
+var React = require('react');
+var Navigatable = require('react-router-component').NavigatableMixin
+
+var AppStore = require('../../stores/app-store');
+
+var Parse = require('parse').Parse;
+
+var Link = require('react-router-component').Link;
+var Alert = require('react-bootstrap').Alert;
 
 var UserLogin =
   React.createClass({
-    modelState: ['item'],
-    mixins: [StoreWatchMixin(getCurrentUser), Navigatable, events("authed")],//events("updateHeaderView"),
+    mixins: [Navigatable],
 
     getInitialState: function() {
       return {user: {}, password: '', error: false};
     },
 
-    fetchData: function() {
-      return true;
-    },
-
-    onChange: function(e) {
+    _onChangePassword: function(e) {
       this.setState({password: e.target.value});
     },
 
-    login: function() {
+    _login: function() {
       var username = this.refs.username.getDOMNode().value;
       var password = this.refs.password.getDOMNode().value;
+
       if(!username||!password) return;
-      var self = this;
 
       Parse.User.logIn(username, password, {
         success: function(user) {
-          console.log('LOGGED IN', user);
           AppStore.setPassword(password);
-          // self.emitUpdateHeaderView();
-          // self.emitAuthed();
-          // self.navigate('/');
           location = '/';
-          // Do stuff after successful login.
         },
         error: function(user, error) {
-          self.setState({error: true});
-          // alert("Error: " + error.code + " " + error.message);
-          // The login failed. Check error to see why.
-        }
+          this.setState({error: true});
+        }.bind(this)
       });
 
     },
 
-    render:function(){
+    render: function() {
         return (
             <div className="row">
               <div className="col-xs-12 col-lg-4 col-md-4 col-sm-4">
@@ -68,10 +54,10 @@ var UserLogin =
                   </div>
                   <div className="form-group">
                     <label htmlFor="exampleInputEmail1">Password</label>
-                    <input type="password" className="form-control" id="password" ref="password" onChange={this.onChange} value={this.state.password} placeholder="Password" />
+                    <input type="password" className="form-control" id="password" ref="password" onChange={this._onChangePassword} value={this.state.password} placeholder="Password" />
                   </div>
                   <div className="form-group">
-                    <input type="button" className="btn btn-success" onClick={this.login} value="Login..." />
+                    <input type="button" className="btn btn-success" onClick={this._login} value="Login..." />
                   </div>
                 </form>
               </div>
@@ -80,4 +66,5 @@ var UserLogin =
           );
     }
   });
+
 module.exports = UserLogin;

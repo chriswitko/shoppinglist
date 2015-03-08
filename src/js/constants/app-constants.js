@@ -1,4 +1,8 @@
+/** @jsx React.DOM */
+'use strict';
+
 module.exports = {
+  UPDATE_ITEM_TITLE: 'UPDATE_ITEM_TITLE',
   ADD_TO_FAV: 'ADD_TO_FAV',
   SUBMIT: 'SUBMIT',
   LOGOUT_APP: 'LOGOUT_APP',

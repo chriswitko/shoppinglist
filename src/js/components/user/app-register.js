@@ -1,36 +1,29 @@
 /** @jsx React.DOM */
-var React = require('react');
-var AppStore = require('../../stores/app-store.js');
-var StoreWatchMixin = require('../../mixins/StoreWatchMixin.js');
-var Link = require('react-router-component').Link;
-var FetchingMixin = require('../../mixins/FetchingMixin.js');
-var Parse = require('parse').Parse;
-var Navigatable = require('react-router-component').NavigatableMixin
-var events = require('../../mixins/react-event-emitter.js');
-var Alert = require('react-bootstrap').Alert;
+'use strict';
 
-function getCurrentUser(component) {
-  return {};
-}
+var React = require('react');
+var Navigatable = require('react-router-component').NavigatableMixin
+
+var AppStore = require('../../stores/app-store.js');
+
+var Parse = require('parse').Parse;
+
+var Link = require('react-router-component').Link;
+var Alert = require('react-bootstrap').Alert;
 
 var UserRegister =
   React.createClass({
-    modelState: ['item'],
-    mixins: [StoreWatchMixin(getCurrentUser), Navigatable],
+    mixins: [Navigatable],
 
     getInitialState: function() {
-      return {user: {}, password: '', error: false};
+      return {user: {}, password: '', error: false, message: 'Sorry, but your username or password is incorrect.'};
     },
 
-    fetchData: function() {
-      return true;
-    },
-
-    onChange: function(e) {
+    _onChangePassword: function(e) {
       this.setState({password: e.target.value});
     },
 
-    registerNewUser: function() {
+    _registerNewUser: function() {
       var username = this.refs.username.getDOMNode().value;
       var email = this.refs.email.getDOMNode().value;
       var password = this.refs.password.getDOMNode().value;
@@ -41,26 +34,22 @@ var UserRegister =
       user.set("password", password);
       user.set("email", email);
 
-      var self = this;
       user.signUp(null, {
         success: function(user) {
-          alert('Hooray!');
-          // Hooray! Let them use the app now.
-        },
+          this.navigate('/login');
+        }.bind(this),
         error: function(user, error) {
-          // Show the error message somewhere and let the user try again.
-          alert("Error: " + error.code + " " + error.message);
-          self.setState({password: ''});
-        }
+          this.setState({password: '', message: error.message, error: true});
+        }.bind(this)
       });
     },
 
-    render:function(){
+    render: function() {
         return (
           <div className="row">
             <div className="col-xs-4">
               <h3>Register new user</h3>
-              { this.state.error ? <Alert bsStyle="warning"><strong>Error</strong> Sorry, but your username or password is incorrect.</Alert> : null }
+              { this.state.error ? <Alert bsStyle="warning"><strong>Error</strong> {this.state.message}</Alert> : null }
               <form className="form">
                 <div className="form-group">
                   <label htmlFor="exampleInputEmail1">Username</label>
@@ -72,10 +61,10 @@ var UserRegister =
                 </div>
                 <div className="form-group">
                   <label htmlFor="exampleInputEmail1">Password</label>
-                  <input type="password" className="form-control" id="password" ref="password" onChange={this.onChange} value={this.state.password} placeholder="Password" />
+                  <input type="password" className="form-control" id="password" ref="password" onChange={this._onChangePassword} value={this.state.password} placeholder="Password" />
                 </div>
                 <div className="form-group">
-                  <input type="button" className="btn btn-success" onClick={this.registerNewUser} value="Register" />
+                  <input type="button" className="btn btn-success" onClick={this._registerNewUser} value="Register" />
                 </div>
               </form>
             </div>
@@ -84,4 +73,5 @@ var UserRegister =
           );
     }
   });
+
 module.exports = UserRegister;

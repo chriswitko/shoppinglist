@@ -1,19 +1,22 @@
 /** @jsx React.DOM */
+'use strict';
+
 var React = require('react');
 var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
 
-var AppActions = require('../../actions/app-actions.js');
-var events = require('../../mixins/react-event-emitter.js');
-var AppStore = require('../../stores/app-store.js');
+var AppActions = require('../../actions/app-actions');
 
-var RemoveFromFav =
+var BtnRemove =
   React.createClass({
-    mixins: [PureRenderMixin, events("removeItem")],
+    propTypes: {
+      item: React.PropTypes.object.isRequired,
+      idx: React.PropTypes.number.isRequired
+    },
+
+    mixins: [PureRenderMixin],
 
     handleClick: function(){
-      var self = this;
       AppActions.removeFromFav(this.props.item, this.props.idx, function() {
-        self.emitRemoveItem();
       });
     },
 
@@ -21,4 +24,4 @@ var RemoveFromFav =
       return <button onClick={this.handleClick} className="btn btn-default"><i className="fa fa-trash"></i></button>
     }
   });
-module.exports = RemoveFromFav;
+module.exports = BtnRemove;

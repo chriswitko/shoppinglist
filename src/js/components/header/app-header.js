@@ -1,35 +1,34 @@
 /** @jsx React.DOM */
+'use strict';
+
 var React = require('react');
 var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
+var Navigatable = require('react-router-component').NavigatableMixin
 
-var AppActions = require('../../actions/app-actions.js');
-var AppStore = require('../../stores/app-store.js');
+var AppActions = require('../../actions/app-actions');
+var AppStore = require('../../stores/app-store');
 
 var Link = require('react-router-component').Link;
-var Button = require('react-bootstrap').Button;
-var HighlightedLink = require('./app-highlightedlink.js');
 
-var Navigatable = require('react-router-component').NavigatableMixin
-var events = require('../../mixins/react-event-emitter.js');
-var Router = require('react-router-component');
+function getStateFromStore() {
+  return {
+    isAuthed: AppStore.getCurrentUser()
+  }
+}
 
 var Header =
   React.createClass({
-    mixins: [PureRenderMixin, Navigatable, events("authed")],
+    mixins: [PureRenderMixin, Navigatable],
 
     getInitialState: function() {
-      return {isAuthed: AppStore.getCurrentUser()};
+      return getStateFromStore();
     },
 
-    onAuthed: function() {
-      this.setState({isAuthed: AppStore.getCurrentUser()});
-    },
-
-    actionLogOut: function() {
+    _actionLogOut: function() {
       AppActions.logout();
     },
 
-    render:function(){
+    render: function() {
       return (
         <div className="row">
           <div className="col-sm-12 ac">
@@ -41,9 +40,8 @@ var Header =
                 <p className="m0 light mt5 small"></p>
                 <ul className="list-unstyled list-inline small">
                   { this.state.isAuthed ? null : <li>Hello. Keep your shopping list in one place.</li> }
-                  { this.state.isAuthed ? <li><a href="/" className={this.getPath()=="/"?"active":""}>All</a></li> : null }
-                  { this.state.isAuthed ? <li><a href="/faved" className={this.getPath()=="/faved"?"active":""}>Faved</a></li> : null }
-                  { this.state.isAuthed ? <li><a href="/" className={this.getPath()=="/archive"?"active":""}>Archive</a></li> : null }
+                  { this.state.isAuthed ? <li><Link href="/" className={this.getPath()=="/"?"active":""}>All</Link></li> : null }
+                  { this.state.isAuthed ? <li><Link href="/faved" className={this.getPath()=="/faved"?"active":""}>Faved</Link></li> : null }
                 </ul>
               </div>
               <div className="col-sm-6 rar">
@@ -52,7 +50,7 @@ var Header =
                   { this.state.isAuthed ? null : <li><Link href="/register">Register</Link></li> }
                   { this.state.isAuthed ? <li><Link href="/submit">Submit new link</Link></li> : null }
                   { this.state.isAuthed ? <li><Link href="/settings">Settings</Link></li> : null }
-                  { this.state.isAuthed ? <li><Link onClick={this.actionLogOut}>Logout</Link></li> : null }
+                  { this.state.isAuthed ? <li><a onClick={this._actionLogOut}>Logout</a></li> : null }
                 </ul>
               </div>
             </div>
@@ -61,4 +59,5 @@ var Header =
         )
     }
   });
+
 module.exports = Header;

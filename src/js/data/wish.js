@@ -1,3 +1,6 @@
+/** @jsx React.DOM */
+'use strict';
+
 var Parse = require('parse').Parse;
 
 var Wish = Parse.Object.extend('Wish', {}, {
@@ -39,7 +42,7 @@ var Wish = Parse.Object.extend('Wish', {}, {
     var collection = new Wish.Collection();
     var all = [];
     collection.query = new Parse.Query(Wish);
-    collection.query.skip((page - 1) * limit);//default 0
+    collection.query.skip((page - 1) * limit);
     collection.query.limit(limit);
     collection.query.descending("createdAt");
     if(user) collection.query.equalTo("user", user);
@@ -62,7 +65,7 @@ var Wish = Parse.Object.extend('Wish', {}, {
     var collection = new Wish.Collection();
     var all = [];
     collection.query = new Parse.Query(Wish);
-    collection.query.skip((page - 1) * limit);//default 0
+    collection.query.skip((page - 1) * limit);
     collection.query.limit(limit);
     if(user) collection.query.equalTo("user", user);
     collection.query.equalTo("isFaved", true);

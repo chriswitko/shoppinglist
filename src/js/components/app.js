@@ -1,4 +1,6 @@
 /** @jsx React.DOM */
+'use strict';
+
 var React = require('react');
 var Catalog = require('../components/catalog/app-catalog.js');
 var Faved = require('../components/catalog/app-faved.js');

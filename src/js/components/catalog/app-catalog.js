@@ -1,86 +1,106 @@
 /** @jsx React.DOM */
+'use strict';
+
 var React = require('react');
 var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
 
-var AppStore = require('../../stores/app-store.js');
-var CatalogItem = require('./app-catalogitem.js');
-var StoreWatchMixin = require('../../mixins/StoreWatchMixin.js');
-var FetchingMixin = require('../../mixins/FetchingMixin.js');
-var Wish = require('../../data/wish.js');
-var events = require('../../mixins/react-event-emitter.js');
-var Parse = require('parse').Parse;
-var Alert = require('react-bootstrap').Alert;
+var AppStore = require('../../stores/app-store');
 
-var MasonryMixin = require('react-masonry-mixin');
-var InfiniteScroll = require('react-infinite-scroll')(React);
+var Wish = require('../../data/wish');
 
-var masonryOptions = {
-    transitionDuration: 0
-};
+var CatalogItem = require('./app-catalogitem');
+var BtnMore = require('./app-btnmore');
 
-var page = 0;
-var perPage = 50;
-
-function getCatalog(cb) {
-  return {items: AppStore.getCatalog(), modalShown: false, page: 1, hasMore: true, sholdUpdate: false};
-}
+var page = 1;
+var perPage = 48;
 
 var Catalog =
   React.createClass({
-    mixins: [PureRenderMixin, StoreWatchMixin(getCatalog), events("logout"), events("removeItem"), MasonryMixin('masonryContainer', masonryOptions)],//StoreWatchMixin(getCatalog),, FetchingMixin
+    mixins: [PureRenderMixin],
 
-    onRemoveItem: function(item) {
-      var self = this;
-      if(this.isMounted()) this.forceUpdate();
+    getInitialState:function(){
+      return {items: AppStore.getCatalog(), page: 1, hasMore: true, shouldUpdate: false};
     },
 
-    onLogout: function(){
-      var self = this;
-      // AppStore.setPleaseRefresh(true);
-      // if(this.isMounted()) this.setState({'sholdUpdate': new Date()})
+    getDefaultProps: function() {},
+
+    componentWillMount:function(){
+      AppStore.addChangeListener(this._onChange);
     },
 
-    includeLoadedArticles: function(page, wishes) {
-      var par = AppStore.getCatalog();
-      var catalog = par.concat(wishes);//HelpersMixin.createUniqueArray(par.concat(wishes), 'id');
+    componentWillUnmount:function(){
+      AppStore.removeChangeListener(this._onChange);
+    },
+
+    _onChange:function(){
+      this.setState({shouldUpdate: true});
+    },
+
+    componentDidMount: function() {
+      if(!this.state.items.length) {
+        this._loadMoreWishes(1, true);
+      } else {
+        this.setState({items: AppStore.getCatalog()});
+      }
+    },
+
+    componentDidUpdate: function() {
+      this.state.shouldUpdate = false;
+    },
+
+    onDatasetUpdate: function() {
+      this.state.items = AppStore.getCatalog();
+    },
+
+    _includeLoadedArticles: function(page, wishes) {
+      var dataset = AppStore.getCatalog();
+      var catalog = dataset.concat(wishes);
+
       AppStore.setCatalog(catalog);
-      if(this.isMounted()) this.setState({'items': catalog, 'page': page + 1, 'hasMore': wishes.length == perPage});
+      this.setState({'items': AppStore.getCatalog(), 'page': page + 1, 'hasMore': wishes.length == perPage});
     },
 
-    loadMoreWishes: function(page) {
-      this.fetchMoreWishes(page, function(wishes) {
-        this.includeLoadedArticles(page, wishes);
+    _loadMoreWishes: function(page) {
+      this._fetchMoreWishes(page, function(wishes) {
+        this._includeLoadedArticles(page, wishes);
       }.bind(this));
     },
 
-    fetchMoreWishes: function(page, callback) {
-      var self = this;
+    _fetchMoreWishes: function(page, callback) {
       Wish.getAll('fetchData', page, perPage, AppStore.getCurrentUser(), function(wishes) {
-        var its = wishes.models.map(function(item){
+        var its = wishes.models.map(function(item) {
           return item;
         })
-
         callback(its);
       }.bind(this));
     },
 
-    getArticlesToRender: function () {
+    _getArticlesToRender: function () {
       var itms = AppStore.getCatalog();
       return itms.map(function (item, index) {
         return (
-            <CatalogItem item={item} idx={index} />
+            <CatalogItem item={item} idx={index} view='catalog' />
         );
       });
     },
 
+    _moreWishes: function() {
+      page++;
+      this._loadMoreWishes(page);
+    },
+
     render:function(){
       return (
-        <div className="row">
-          <InfiniteScroll ref='masonryContainer' id='masonryContainer' pageStart={this.state.page - 1} loadMore={this.loadMoreWishes} hasMore={this.state.hasMore} threshold={1000}>
-            {this.getArticlesToRender()}
-          </InfiniteScroll>
+        <div>
+          <div className="row">
+            {this._getArticlesToRender()}
+          </div>
+          <div className={this.state.hasMore? 'row ac mt10' : 'hidden'}>
+            <BtnMore callback={this._moreWishes}/>
+          </div>
         </div>
       )
     }
   });
+
 module.exports = Catalog;

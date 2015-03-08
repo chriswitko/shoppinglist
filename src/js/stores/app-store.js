@@ -1,20 +1,33 @@
+/** @jsx React.DOM */
+'use strict';
+
 var AppDispatcher = require('../dispatchers/app-dispatcher');
 var AppConstants = require('../constants/app-constants');
 var merge = require('react/lib/merge');
 var EventEmitter = require('events').EventEmitter;
+
 var Parse = require('parse').Parse;
+
 var Wish = require('../data/wish.js');
 
 var CHANGE_EVENT = "change";
 
+var BreakException= {};
+
 var _catalog = [];
+var _favedCatalog = [];
 
 var _cartItems = [];
+
+var _title = '';
 
 var _pleaseRefresh = false;
 
 var _currentUser = null;
 var _password = null;
+
+var page = 0;
+var perPage = 48;
 
 function _getCurrentUser() {
   _currentUser = Parse.User.current();
@@ -34,12 +47,58 @@ function _getPleaseRefresh() {
 }
 
 function _removeItemFromCatalog(item, index, cb){
-  _catalog[index].isRemoved = true;
-  _catalog.splice(index, 1);
+  if(_favedCatalog.length&&item.attributes.isFaved) {
+    try {
+      _favedCatalog.forEach(function(itm, idx) {
+        if(itm.id==item.id) {
+          _favedCatalog.splice(idx, 1);
+          throw BreakException;
+        }
+      });
+    } catch(e) {
+        if (e!==BreakException) throw e;
+    }
+    // _favedCatalog[index].isRemoved = true;
+    // _favedCatalog.splice(index, 1);
+  }
+  try {
+    _catalog.forEach(function(itm, idx) {
+      if(itm.id==item.id) {
+        _catalog.splice(idx, 1);
+        throw BreakException;
+      }
+    });
+  } catch(e) {
+      if (e!==BreakException) throw e;
+  }
+  // _catalog[index].isRemoved = true;
+  // _catalog.splice(index, 1);
   cb();
 }
 
+function _updateItemTitle (title, cb) {
+  _title = title;
+  cb(_title||'Hello World');
+}
+
+function _getItemTitle (title, cb) {
+  return _title;
+}
+
 function _addToFav(item, cb) {
+  // if(_favedCatalog.length&&item.props.item.get('isFaved')) {
+  //   try {
+  //     _favedCatalog.forEach(function(itm, idx) {
+  //       if(itm.id===item.props.item.id) {
+  //         _favedCatalog.splice(idx, 1);
+  //         throw BreakException;
+  //       }
+  //     });
+  //   } catch(e) {
+  //       if (e!==BreakException) throw e;
+  //   }
+  // }
+
   item.props.item.set("isFaved", !item.props.item.get('isFaved'));
   item.props.item.save({
     success: function(myObject) {
@@ -53,15 +112,15 @@ function _addToFav(item, cb) {
 
 function _removeItem(item, index, cb){
   if(!_getCurrentUser()) return cb();
-  item.destroy({
-    success: function(myObject) {
-      _removeItemFromCatalog(item, index, function() {
-        // self.props.helloWorld.getDOMNode().remove();
-        cb();
-      });
-    },
-    error: function(myObject, error) {
-    }
+  _removeItemFromCatalog(item, index, function() {
+    item.destroy({
+      success: function(myObject) {
+      },
+      error: function(myObject, error) {
+        console.log('remove err', error);
+      }
+    });
+    cb();
   });
 }
 
@@ -80,6 +139,15 @@ function _decreaseItem(index){
 function _appLogout() {
   Parse.User.logOut();
   location = '/';
+}
+
+function _fetchMoreFavedWishes(page, callback) {
+  Wish.getFaved('fetchData', page, perPage, AppStore.getCurrentUser(), function(wishes) {
+    var its = wishes.models.map(function(item){
+      return item;
+    })
+    callback(its);
+  });
 }
 
 function showImage(imgAddress) {
@@ -125,51 +193,6 @@ function arrayBufferToDataUri(arrayBuffer) {
   return "data:image/jpeg;base64," + base64;
 }
 
-
-function _submit(item, cb) {
-  var url = item.refs.url.getDOMNode().value;
-  var title = item.refs.title.getDOMNode().value;
-  var image_url = item.refs.image_url.getDOMNode().value;
-  var image = item.refs.image.getDOMNode();
-  if(!image.files.length&&!image_url) return;
-
-  var ts = Math.floor(Date.now() / 1000);
-  var name = "photo_" + ts.toString() + ".jpg";
-
-  if (image.files.length > 0) {
-    var file = image.files[0];
-    var parseFile = new Parse.File(name, file);
-    parseFile.save().then(function() {
-      Wish.createByObject({
-        'url': url,
-        'title': title,
-        'user': AppStore.getCurrentUser(),
-        'picture': parseFile
-      }, function() {
-        cb();
-      });
-    }, function(error) {
-      cb(error);
-    });
-  } else {
-    getImageAsBase64(image_url, function(file) {
-      var parseFile = new Parse.File(name, { base64: file });
-      parseFile.save().then(function() {
-        Wish.createByObject({
-          'url': url,
-          'title': title,
-          'user': AppStore.getCurrentUser(),
-          'picture': parseFile
-        }, function() {
-          cb();
-        });
-      }, function(error) {
-        cb(error);
-      });
-    })
-  }
-}
-
 var AppStore = merge(EventEmitter.prototype, {
   emitChange:function(){
     this.emit(CHANGE_EVENT)
@@ -185,6 +208,14 @@ var AppStore = merge(EventEmitter.prototype, {
 
   removeItemFromCatalog: function(item, idx, cb) {
     _removeItemFromCatalog(item, idx, cb);
+  },
+
+  fetchMoreFavedWishes: function(page, cb) {
+    return _fetchMoreFavedWishes(page, cb);
+  },
+
+  getItemTitle: function() {
+    return _getItemTitle();
   },
 
   getUsername: function() {
@@ -220,9 +251,18 @@ var AppStore = merge(EventEmitter.prototype, {
     return _catalog
   },
 
+  getFavedCatalog:function(){
+    return _favedCatalog
+  },
+
   setCatalog:function(catalog){
     _catalog = catalog;
     return _catalog ;
+  },
+
+  setFavedCatalog:function(catalog){
+    _favedCatalog = catalog;
+    return _favedCatalog ;
   },
 
   setRemoteData: function() {
@@ -236,8 +276,8 @@ var AppStore = merge(EventEmitter.prototype, {
   dispatcherIndex:AppDispatcher.register({}, function(payload){
     var action = payload.action; // this is our action from handleViewAction
     switch(action.actionType){
-      case AppConstants.SUBMIT:
-        _submit(payload.action.item, payload.action.cb);
+      case AppConstants.UPDATE_ITEM_TITLE:
+        _updateItemTitle(payload.action.title, payload.action.cb);
         break;
       case AppConstants.LOGOUT_APP:
         _appLogout();

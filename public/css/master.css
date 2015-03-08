@@ -1,3 +1,5 @@
+button:focus {outline:0!important;}
+
 .logo a:hover {
   color: #262626;
 }
@@ -16,6 +18,10 @@
 
 .mt10 {
   margin-top: 10px;
+}
+
+.p20 {
+  padding: 20px;
 }
 
 .al {
@@ -53,6 +59,30 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+}
+
+ul.list-img-prev {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
+ul.list-img-prev li {
+  margin-right: 10px;
+  font-size: 12px;
+  width: 100px;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.bg-odd {
+  background-color: #f7f7f7;
+  padding: 10px;
+}
+
+.btn-more {
+  text-decoration: none!important;
 }
 
 /* Small devices (tablets, 768px and up) */

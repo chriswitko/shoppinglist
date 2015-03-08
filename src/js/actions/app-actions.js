@@ -1,7 +1,16 @@
+'use strict';
+
 var AppConstants = require('../constants/app-constants.js');
 var AppDispatcher = require('../dispatchers/app-dispatcher.js');
 
 var AppActions = {
+  updateTitle: function(title, cb) {
+    AppDispatcher.handleViewAction({
+      actionType: AppConstants.UPDATE_ITEM_TITLE,
+      title: title,
+      cb: cb
+    });
+  },
   removeFromFav: function(item, index, cb) {
     AppDispatcher.handleViewAction({
       actionType: AppConstants.REMOVE_ITEM,

@@ -1,10 +1,12 @@
 /** @jsx React.DOM */
+'use strict';
+
 var React = require('react');
 var Header = require('../components/header/app-header.js');
 
 var Template =
   React.createClass({
-    render:function(){
+    render: function() {
       return (
         <div>
           <div className="container">
@@ -15,4 +17,5 @@ var Template =
         )
     }
   });
+
 module.exports = Template;

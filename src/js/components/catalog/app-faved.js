@@ -1,87 +1,83 @@
 /** @jsx React.DOM */
+'use strict';
+
 var React = require('react');
 var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
 
-var AppStore = require('../../stores/app-store.js');
-var CatalogItem = require('./app-catalogitem.js');
+var AppStore = require('../../stores/app-store');
 
-var Wish = require('../../data/wish.js');
+var Wish = require('../../data/wish');
 
-var StoreWatchMixin = require('../../mixins/StoreWatchMixin.js');
-var events = require('../../mixins/react-event-emitter.js');
+var CatalogItem = require('./app-catalogitem');
+var BtnMore = require('./app-btnmore');
 
-var MasonryMixin = require('react-masonry-mixin');
-var InfiniteScroll = require('react-infinite-scroll')(React);
-
-var masonryOptions = {
-    transitionDuration: 0
-};
-
-var page = 0;
-var perPage = 50;
-
-function getCatalog(cb) {
-  return null;
-}
+var page = 1;
+var perPage = 48;
 
 var Faved =
   React.createClass({
 
-    mixins: [PureRenderMixin, StoreWatchMixin(getCatalog), events("logout"), events("removeItem"), MasonryMixin('masonryContainer', masonryOptions)],//StoreWatchMixin(getCatalog),
+    mixins: [PureRenderMixin],
 
     getInitialState: function() {
-      return {items: [], modalShown: false, page: 1, hasMore: true, sholdUpdate: false};
+      return {items: AppStore.getFavedCatalog(), modalShown: false, page: 1, hasMore: true, shouldUpdate: false};
     },
 
-    onRemoveItem: function(item) {
-      AppStore.setPleaseRefresh(true);
-      if(this.isMounted) this.setState({'sholdUpdate': true})
+    componentWillMount:function(){
+      AppStore.addChangeListener(this._onChange);
     },
 
-    onLogout: function(){
-      var self = this;
-      AppStore.setPleaseRefresh(true);
+    componentWillUnmount:function(){
+      AppStore.removeChangeListener(this._onChange);
     },
 
-    includeLoadedArticles: function(page, wishes) {
-      var par = AppStore.getCatalog();
-      var catalog = par.concat(wishes);
-      AppStore.setCatalog(catalog);
-      if(this.isMounted) this.setState({'items': catalog, 'page': page + 1, 'hasMore': wishes.length == perPage});
+    _onChange:function(){
+      this.setState({items:AppStore.getFavedCatalog(), shouldUpdate: true});
     },
 
-    loadMoreWishes: function(page) {
-      this.fetchMoreWishes(page, function(wishes) {
-        this.includeLoadedArticles(page, wishes);
+    componentDidMount: function() {
+      this._loadMoreWishes(1, true);
+    },
+
+    componentDidUpdate: function() {
+      this.state.shouldUpdate = false;
+    },
+
+    _includeLoadedArticles: function(page, wishes) {
+      var dataset = page>1 ? AppStore.getFavedCatalog() : [];
+      var catalog = dataset.concat(wishes);
+
+      AppStore.setFavedCatalog(catalog);
+      this.setState({'items': AppStore.getFavedCatalog(), 'page': page + 1, 'hasMore': wishes.length == perPage});
+    },
+
+    _loadMoreWishes: function(page) {
+      AppStore.fetchMoreFavedWishes(page, function(wishes) {
+        this._includeLoadedArticles(page, wishes);
       }.bind(this));
     },
 
-    fetchMoreWishes: function(page, callback) {
-      var self = this;
-      Wish.getFaved('fetchData', page, perPage, AppStore.getCurrentUser(), function(wishes) {
-        var its = wishes.models.map(function(item){
-          return item;
-        })
-        callback(its);
-      }.bind(this));
-    },
-
-    getArticlesToRender: function () {
-      return this.state.items.map(function (item, index) {
+    _getArticlesToRender: function () {
+      var itms = AppStore.getFavedCatalog();
+      return itms.map(function (item, index) {
         return (
-          <CatalogItem item={item} idx={index} />
+            <CatalogItem item={item} idx={index} />
         );
       });
     },
 
-    render:function(){
+    render: function() {
       return (
-        <div className="row">
-          <InfiniteScroll ref='masonryContainer' id='masonryContainer' pageStart={this.state.page - 1} loadMore={this.loadMoreWishes} hasMore={this.state.hasMore} threshold={1000}>
-            {this.getArticlesToRender()}
-          </InfiniteScroll>
+        <div>
+          <div className="row">
+            {this._getArticlesToRender()}
+          </div>
+          <div className={this.state.hasMore? 'row ac mt10' : 'hidden'}>
+            <BtnMore callback={this._moreWishes}/>
+          </div>
         </div>
       )
     }
   });
+
 module.exports = Faved;
