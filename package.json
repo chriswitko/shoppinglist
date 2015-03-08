@@ -39,7 +39,8 @@
     "react-router": "0.12.4"
   },
   "scripts": {
-    "test": "./node_modules/karma/bin/karma start karma.conf.js"
+    "test": "./node_modules/karma/bin/karma start karma.conf.js",
+    "start": "cd dist && python -m SimpleHTTPServer"
   },
   "dependencies": {
     "es6-promise": "^1.0.0"
