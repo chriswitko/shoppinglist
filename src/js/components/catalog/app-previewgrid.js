@@ -37,9 +37,10 @@ var PreviewGrid =
     _handleClick: function() {
       var url = this.state.url;
       $.getJSON(Config.proxyHostUrl + 'http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=' + encodeURIComponent(url), function(result) {
-        console.log(result);
-        _photos = result.responseData.results;
-        this.setState({photos: _photos});
+        if(result&&result.responseData) {
+          var _photos = result.responseData.results;
+          this.setState({photos: _photos});
+        }
       }.bind(this));
     },
 
