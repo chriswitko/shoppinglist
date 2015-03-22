@@ -1,30 +1,32 @@
 /** @jsx React.DOM */
-'use strict';
+"use strict";
 
-var React = require('react');
-var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
-var Navigatable = require('react-router-component').NavigatableMixin
+var React = require("react");
+var PureRenderMixin = require("react/addons").addons.PureRenderMixin;
+var Navigatable = require("react-router-component").NavigatableMixin;
 
-var AppActions = require('../../actions/app-actions');
-var AppStore = require('../../stores/app-store');
+var AppActions = require("../../actions/app-actions");
+var AppStore = require("../../stores/app-store");
 
-var Link = require('react-router-component').Link;
+var Link = require("react-router-component").Link;
 
 function getStateFromStore() {
   return {
     isAuthed: AppStore.getCurrentUser()
-  }
+  };
 }
 
 var Header =
   React.createClass({
+    displayName: "Header",
+
     mixins: [PureRenderMixin, Navigatable],
 
     getInitialState: function() {
       return getStateFromStore();
     },
 
-    _actionLogOut: function() {
+    actionLogOut: function() {
       AppActions.logout();
     },
 
@@ -40,8 +42,8 @@ var Header =
                 <p className="m0 light mt5 small"></p>
                 <ul className="list-unstyled list-inline small">
                   { this.state.isAuthed ? null : <li>Hello. Keep your shopping list in one place.</li> }
-                  { this.state.isAuthed ? <li><Link href="/" className={this.getPath()=="/"?"active":""}>All</Link></li> : null }
-                  { this.state.isAuthed ? <li><Link href="/faved" className={this.getPath()=="/faved"?"active":""}>Faved</Link></li> : null }
+                  { this.state.isAuthed ? <li><Link href="/" className={ this.getPath() === "/" ? "active" : "" }>All</Link></li> : null }
+                  { this.state.isAuthed ? <li><Link href="/faved" className={ this.getPath() === "/faved" ? "active" : "" }>Faved</Link></li> : null }
                 </ul>
               </div>
               <div className="col-sm-6 rar">
@@ -50,13 +52,13 @@ var Header =
                   { this.state.isAuthed ? null : <li><Link href="/register">Register</Link></li> }
                   { this.state.isAuthed ? <li><Link href="/submit">Submit new link</Link></li> : null }
                   { this.state.isAuthed ? <li><Link href="/settings">Settings</Link></li> : null }
-                  { this.state.isAuthed ? <li><a onClick={this._actionLogOut}>Logout</a></li> : null }
+                  { this.state.isAuthed ? <li><a onClick={this.actionLogOut}>Logout</a></li> : null }
                 </ul>
               </div>
             </div>
           </div>
         </div>
-        )
+        );
     }
   });
 

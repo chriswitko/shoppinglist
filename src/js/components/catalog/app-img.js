@@ -1,11 +1,13 @@
 /** @jsx React.DOM */
-'use strict';
+"use strict";
 
-var React = require('react');
-var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
+var React = require("react");
+var PureRenderMixin = require("react/addons").addons.PureRenderMixin;
 
 var Img =
   React.createClass({
+    displayName: "Img",
+
     propTypes: {
       maxWidth: React.PropTypes.number.isRequired,
       url: React.PropTypes.string.isRequired
@@ -24,41 +26,41 @@ var Img =
     },
 
     componentDidMount: function () {
-      var width = this.refs.me.getDOMNode().offsetWidth;
-      this.setState({width: width});
-
-      window.addEventListener('resize', this.handleResize);
+      this.handleResize();
+      window.addEventListener("resize", this.handleResize);
     },
 
     componentWillUnmount: function() {
-      window.removeEventListener('resize', this.handleResize);
+      window.removeEventListener("resize", this.handleResize);
     },
 
-    handleResize: function(e) {
+    handleResize: function() {
       var width = this.refs.me.getDOMNode().offsetWidth;
       this.setState({width: width});
     },
 
     render: function() {
       var maxResponsive = {
-        width: '100%'
+        width: "100%"
       };
       var currentWidth = this.state.width;
-      if(this.state.width<158) currentWidth = this.state.maxWidth||340;
+      if(this.state.width < 158) {
+        currentWidth = this.state.maxWidth || 340;
+      }
       var itemStyle = {
-        backgroundImage: 'url('+this.props.url+')',
-        backgroundSize: 'cover',
-        backgroundPosition: '50% 50%',
+        backgroundImage: "url(" + this.props.url + ")",
+        backgroundSize: "cover",
+        backgroundPosition: "50% 50%",
         width: currentWidth,
         height: currentWidth,
-        overflow: 'hidden'
+        overflow: "hidden"
       };
       return (
         <div ref="me" className="clearfix" style={maxResponsive}>
           <div style={itemStyle}>
           </div>
         </div>
-        )
+        );
     }
   });
 

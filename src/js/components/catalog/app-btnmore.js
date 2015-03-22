@@ -1,11 +1,13 @@
 /** @jsx React.DOM */
-'use strict';
+"use strict";
 
-var React = require('react');
-var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
+var React = require("react");
+var PureRenderMixin = require("react/addons").addons.PureRenderMixin;
 
 var BtnMore =
   React.createClass({
+    displayName: "BtnMore",
+
     propTypes: {
       callback: React.PropTypes.func.isRequired
     },
@@ -13,7 +15,9 @@ var BtnMore =
     mixins: [PureRenderMixin],
 
     render: function() {
-      return <button onClick={this.props.callback} className="btn btn-link btn-more">SHOW ME MORE<br/><i className='fa fa-chevron-down pink'></i></button>
+      return (
+        <button onClick={this.props.callback} className="btn btn-link btn-more">SHOW ME MORE<br/><i className="fa fa-chevron-down pink"></i></button>
+        );
     }
   });
 

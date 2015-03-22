@@ -1,30 +1,31 @@
 /** @jsx React.DOM */
-'use strict';
+"use strict";
 
-var React = require('react');
-var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
-var Navigatable = require('react-router-component').NavigatableMixin
+var React = require("react");
+var PureRenderMixin = require("react/addons").addons.PureRenderMixin;
+var Navigatable = require("react-router-component").NavigatableMixin;
 
-var Config = require('../../config/app-config-client');
+var Config = require("../../config/app-config-client");
 
-var Parse = require('parse').Parse;
+var Parse = require("parse").Parse;
 
-var AppStore = require('../../stores/app-store');
-var AppActions = require('../../actions/app-actions');
+var AppStore = require("../../stores/app-store");
 
-var Wish = require('../../data/wish.js');
+var Wish = require("../../data/wish.js");
 
-var HelpersMixin = require('../../mixins/HelpersMixin');
+var HelpersMixin = require("../../mixins/HelpersMixin");
 
-var PreviewGrid = require('./app-previewgrid');
-var Alert = require('react-bootstrap').Alert;
+var PreviewGrid = require("./app-previewgrid");
+var Alert = require("react-bootstrap").Alert;
 
 var WishSubmit =
   React.createClass({
+    displayName: "WishSubmit",
+
     mixins: [PureRenderMixin, Navigatable, HelpersMixin],
 
     getInitialState: function() {
-      return {error: false, title: '', url: '', image_url: ''};
+      return {error: false, title: "", url: "", imageUrl: ""};
     },
 
     handleClick: function(evt) {
@@ -36,60 +37,64 @@ var WishSubmit =
     },
 
     handleClickImageUrl: function(evt) {
-      this.setState({image_url: evt.target.value});
+      this.setState({imageUrl: evt.target.value});
     },
 
-    _submit: function() {
+    submit: function() {
       var url = this.refs.url.getDOMNode().value;
       var title = this.refs.title.getDOMNode().value;
-      var image_url = this.refs.image_url.getDOMNode().value;
+      var imageUrl = this.refs.imageUrl.getDOMNode().value;
       var image = this.refs.image.getDOMNode();
-      if(!image.files.length&&!image_url) return;
+      if(!image.files.length && !imageUrl) {
+        return;
+      }
 
       var ts = Math.floor(Date.now() / 1000);
       var name = "photo_" + ts.toString() + ".jpg";
 
+      var parseFile;
+
       if (image.files.length > 0) {
         var file = image.files[0];
-        var parseFile = new Parse.File(name, file);
+        parseFile = new Parse.File(name, file);
         parseFile.save().then(function() {
           Wish.createByObject({
-            'url': url,
-            'title': title,
-            'user': AppStore.getCurrentUser(),
-            'picture': parseFile
+            "url": url,
+            "title": title,
+            "user": AppStore.getCurrentUser(),
+            "picture": parseFile
           }, function() {
-            location = '/';
+            top.location = "/";
           });
-        }, function(error) {
+        }, function() {
           // add error info
-          location = '/';
+          top.location = "/";
         });
       } else {
-        this.getImageAsBase64(Config.proxyHostUrl + image_url, function(file) {
-          var parseFile = new Parse.File(name, { base64: file });
+        this.getImageAsBase64(Config.proxyHostUrl + imageUrl, function(base64) {
+          parseFile = new Parse.File(name, { base64: base64 });
           parseFile.save().then(function() {
             Wish.createByObject({
-              'url': url,
-              'title': title,
-              'user': AppStore.getCurrentUser(),
-              'picture': parseFile
+              "url": url,
+              "title": title,
+              "user": AppStore.getCurrentUser(),
+              "picture": parseFile
             }, function() {
-              location = '/';
+              top.location = "/";
             });
-          }, function(error) {
+          }, function() {
             // add error info
-            location = '/';
+            top.location = "/";
           });
-        })
+        });
       }
     },
 
-    _callback: function(e) {
-      this.setState({title: e.title, image_url: e.image_url});
+    callback: function(e) {
+      this.setState({title: e.title, imageUrl: e.imageUrl});
     },
 
-    render:function(){
+    render: function(){
       return (
         <div>
           <div className="row">
@@ -102,7 +107,7 @@ var WishSubmit =
                   <input type="text" className="form-control" id="url" ref="url" value={this.state.url} onChange={this.handleClickUrl} placeholder="Enter URL address" autoFocus="true" />
                 </div>
                 <div className="form-group mt10 bg-odd">
-                  <PreviewGrid callback={this._callback} url={this.state.url}/>
+                  <PreviewGrid callback={this.callback} url={this.state.url}/>
                 </div>
                 <div className="form-group">
                   <label htmlFor="exampleInputEmail1">Title</label>
@@ -110,14 +115,14 @@ var WishSubmit =
                 </div>
                 <div className="form-group">
                   <label htmlFor="exampleInputEmail1">Enter image url</label>
-                  <input type="text" className="form-control" id="image_url" ref="image_url" value={this.state.image_url} onChange={this.handleClickImageUrl} />
+                  <input type="text" className="form-control" id="imageUrl" ref="imageUrl" value={this.state.imageUrl} onChange={this.handleClickImageUrl} />
                 </div>
                 <div className="form-group">
                   <label htmlFor="exampleInputEmail1">or, upload image from this device...</label>
                   <input type="file" className="form-control" id="image" ref="image" />
                 </div>
                 <div className="form-group">
-                  <input type="button" className="btn btn-success" onClick={this._submit} value="Submit..." />
+                  <input type="button" className="btn btn-success" onClick={this.submit} value="Submit..." />
                 </div>
               </form>
             </div>

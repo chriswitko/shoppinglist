@@ -1,25 +1,52 @@
 /** @jsx React.DOM */
-'use strict';
+"use strict";
 
-var React = require('react');
-var Navigatable = require('react-router-component').NavigatableMixin
+var React = require("react");
+var Navigatable = require("react-router-component").NavigatableMixin;
 
-var AppStore = require('../../stores/app-store.js');
+var AppStore = require("../../stores/app-store.js");
 
-var Wish = require('../../data/wish.js');
+var Wish = require("../../data/wish.js");
 
-var Parse = require('parse').Parse;
-
-var Link = require('react-router-component').Link;
-var Alert = require('react-bootstrap').Alert;
-var ProgressBar = require('react-bootstrap').ProgressBar;
+var Alert = require("react-bootstrap").Alert;
+var ProgressBar = require("react-bootstrap").ProgressBar;
 
 var UserSettingsImport =
   React.createClass({
+    displayName: "UserSettingsImport",
+
     mixins: [Navigatable],
 
     getInitialState: function() {
-      return {user: {}, username: '', error: false, percent: 0};
+      return {user: {}, username: "", error: false, percent: 0};
+    },
+
+    parseWishes: function(wishes, user, totalItems, totalPages, p) {
+      var countItems = 0, percent = 0;
+
+      wishes.wishes.map(function(wish) {
+        countItems++;
+        percent = Math.floor((countItems * 100) / totalItems);
+
+        this.setState({"percent": percent, "countItems": countItems, "totalItems": totalItems, "totalPages": totalPages, "currentPage": p});
+
+        if(wish.wish.url && wish.wish.title) {
+          Wish.createByObject({
+            "url": wish.wish.url,
+            "title": wish.wish.title,
+            "description": wish.wish.description,
+            "user": user,
+            "img": wish.wish.finalImage
+          }, function() {
+          });
+        }
+      });
+    },
+
+    getWishes: function(p, user, totalItems, totalPages) {
+      $.get("https://api.szopuje.pl/api/v2/users/chriswitko/wishes?page=" + p).done(function(wishes) {
+        this.parseWishes(wishes, user, totalItems, totalPages, p);
+      });
     },
 
     importFromSzopuje: function() {
@@ -32,33 +59,13 @@ var UserSettingsImport =
         this.setState({error: false});
       }
 
-      $.get('https://api.szopuje.pl/api/v2/users/' + username + '/wishes', function(result) {
-        var lastWish = result.wishes[0].wish;
+      $.get("https://api.szopuje.pl/api/v2/users/" + username + "/wishes", function(result) {
         var user = AppStore.getCurrentUser();
         var totalItems = result.pagination.total;
-        var countItems = 0, percent = 0;
         var totalPages = result.pagination.pages;
 
-        for(var p=1;p<=totalPages;p++) {
-          $.get('https://api.szopuje.pl/api/v2/users/chriswitko/wishes?page='+p, function(result) {
-            result.wishes.forEach(function(wish) {
-              countItems++;
-              percent = Math.floor((countItems * 100)/totalItems);
-
-              this.setState({'percent': percent, 'countItems': countItems, 'totalItems': totalItems, 'totalPages': totalPages, 'currentPage': p});
-
-              if(wish.wish.url&&wish.wish.title) {
-                Wish.createByObject({
-                  'url': wish.wish.url,
-                  'title': wish.wish.title,
-                  'description': wish.wish.description,
-                  'user': user,
-                  'img': wish.wish.finalImage
-                }, function() {
-                });
-              }
-            })
-          }.bind(this));
+        for(var p = 1; p <= totalPages; p++) {
+          this.getWishes(p, user, totalItems, totalPages);
         }
       });
     },

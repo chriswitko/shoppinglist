@@ -1,17 +1,19 @@
 /** @jsx React.DOM */
-'use strict';
+"use strict";
 
-var React = require('react');
-var Navigatable = require('react-router-component').NavigatableMixin
+var React = require("react");
+var Navigatable = require("react-router-component").NavigatableMixin;
 
-var Link = require('react-router-component').Link;
+var Link = require("react-router-component").Link;
 
 var UserSettings =
   React.createClass({
+    displayName: "UserSettings",
+
     mixins: [Navigatable],
 
     getInitialState: function() {
-      return {user: {}, password: '', error: false};
+      return {user: {}, password: "", error: false};
     },
 
     render: function() {

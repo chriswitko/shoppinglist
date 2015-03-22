@@ -1,11 +1,12 @@
 /** @jsx React.DOM */
-'use strict';
+"use strict";
 
-var React = require('react');
-var Header = require('../components/header/app-header.js');
+var React = require("react");
+var Header = require("../components/header/app-header.js");
 
 var Template =
   React.createClass({
+    displayName: "Template",
     render: function() {
       return (
         <div>
@@ -14,7 +15,7 @@ var Template =
             {this.props.children}
           </div>
         </div>
-        )
+        );
     }
   });
 

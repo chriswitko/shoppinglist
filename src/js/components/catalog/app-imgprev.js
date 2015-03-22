@@ -1,38 +1,41 @@
 /** @jsx React.DOM */
-'use strict';
+"use strict";
 
-var React = require('react');
-var PureRenderMixin = require('react/addons').addons.PureRenderMixin;
+var React = require("react");
+var PureRenderMixin = require("react/addons").addons.PureRenderMixin;
 
-var ItemImg = require('./app-img');
+var ItemImg = require("./app-img");
 
 var ImgPrev =
   React.createClass({
+    displayName: "ImgPrev",
+
     propTypes: {
       callback: React.PropTypes.func.isRequired,
       image: React.PropTypes.string.isRequired,
-      image_url: React.PropTypes.string.isRequired
+      imageUrl: React.PropTypes.string.isRequired,
+      title: React.PropTypes.string.isRequired
     },
 
     mixins: [PureRenderMixin],
 
-    _callback: function() {
+    callback: function() {
       var self = this;
       this.props.callback({
         title: self.props.title,
-        image_url: self.props.image_url
+        imageUrl: self.props.imageUrl
       });
     },
 
     render: function() {
       return (
-        <div className="clickable" onClick={this._callback}>
+        <div className="clickable" onClick={this.callback}>
           {this.props.title}
           <div className="clearfix mt10">
-            <ItemImg url={this.props.image} image={this.props.image_url} maxWidth={100}/>
+            <ItemImg url={this.props.image} image={this.props.imageUrl} maxWidth={100}/>
           </div>
         </div>
-        )
+        );
     }
   });
 

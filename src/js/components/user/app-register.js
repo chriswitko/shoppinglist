@@ -1,45 +1,46 @@
 /** @jsx React.DOM */
-'use strict';
+"use strict";
 
-var React = require('react');
-var Navigatable = require('react-router-component').NavigatableMixin
+var React = require("react");
+var Navigatable = require("react-router-component").NavigatableMixin;
 
-var AppStore = require('../../stores/app-store.js');
+var Parse = require("parse").Parse;
 
-var Parse = require('parse').Parse;
-
-var Link = require('react-router-component').Link;
-var Alert = require('react-bootstrap').Alert;
+var Alert = require("react-bootstrap").Alert;
 
 var UserRegister =
   React.createClass({
+    displayName: "UserRegister",
+
     mixins: [Navigatable],
 
     getInitialState: function() {
-      return {user: {}, password: '', error: false, message: 'Sorry, but your username or password is incorrect.'};
+      return {user: {}, password: "", error: false, message: "Sorry, but your username or password is incorrect."};
     },
 
-    _onChangePassword: function(e) {
+    onChangePassword: function(e) {
       this.setState({password: e.target.value});
     },
 
-    _registerNewUser: function() {
+    registerNewUser: function() {
       var username = this.refs.username.getDOMNode().value;
       var email = this.refs.email.getDOMNode().value;
       var password = this.refs.password.getDOMNode().value;
-      if(!username||!email||!password) return;
+      if(!username || !email || !password) {
+        return;
+      }
 
       var user = new Parse.User();
-      user.set("username", username);
-      user.set("password", password);
-      user.set("email", email);
+          user.set("username", username);
+          user.set("password", password);
+          user.set("email", email);
 
       user.signUp(null, {
-        success: function(user) {
-          this.navigate('/login');
+        success: function() {
+          this.navigate("/login");
         }.bind(this),
-        error: function(user, error) {
-          this.setState({password: '', message: error.message, error: true});
+        error: function(profile, error) {
+          this.setState({password: "", message: error.message, error: true});
         }.bind(this)
       });
     },
@@ -61,10 +62,10 @@ var UserRegister =
                 </div>
                 <div className="form-group">
                   <label htmlFor="exampleInputEmail1">Password</label>
-                  <input type="password" className="form-control" id="password" ref="password" onChange={this._onChangePassword} value={this.state.password} placeholder="Password" />
+                  <input type="password" className="form-control" id="password" ref="password" onChange={this.onChangePassword} value={this.state.password} placeholder="Password" />
                 </div>
                 <div className="form-group">
-                  <input type="button" className="btn btn-success" onClick={this._registerNewUser} value="Register" />
+                  <input type="button" className="btn btn-success" onClick={this.registerNewUser} value="Register" />
                 </div>
               </form>
             </div>

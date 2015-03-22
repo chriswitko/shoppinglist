@@ -3,6 +3,7 @@ var browserify = require('gulp-browserify');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var shell = require('gulp-shell');
+var eslint = require('gulp-eslint');
 // var karma = require('gulp-karma');
 
 // var testFiles = [
@@ -30,6 +31,23 @@ var shell = require('gulp-shell');
 //     singleRun: true
 //   }, done);
 // });
+
+gulp.task('lint', function () {
+    // Note: To have the process exit with an error code (1) on
+    //  lint error, return the stream and pipe to failOnError last.
+    return gulp.src([
+      'src/js/actions/**/*.js',
+      'src/js/components/**/*.js',
+      'src/js/config/**/*.js',
+      'src/js/constants/**/*.js',
+      'src/js/data/**/*.js',
+      'src/js/mixins/**/*.js',
+      'src/js/stores/**/*.js'
+      ])
+        .pipe(eslint())
+        .pipe(eslint.format())
+        .pipe(eslint.failOnError());
+});
 
 gulp.task('browserify', function() {
   gulp.src('src/js/main.js')
